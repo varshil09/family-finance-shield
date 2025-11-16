@@ -415,10 +415,11 @@ $current_user = $userModel->getUserById($user_id);
     <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="assets/js/script.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
-        // Initialize Dashboard Charts with Real Data
-        document.addEventListener('DOMContentLoaded', function() {
+        // Dashboard Chart Initialization
+        function initializeDashboardCharts() {
             console.log('Initializing dashboard charts...');
             
             // Monthly Trend Chart with Real Data
@@ -427,10 +428,14 @@ $current_user = $userModel->getUserById($user_id);
                 console.log('Found monthly trend chart element');
                 
                 const monthlyData = <?= json_encode($monthly_trends) ?>;
-                console.log('Monthly data:', monthlyData);
                 
                 try {
-                    new Chart(trendCtx, {
+                    // Destroy existing chart if it exists in currentCharts
+                    if (window.currentCharts.monthlyTrendChart) {
+                        window.currentCharts.monthlyTrendChart.destroy();
+                    }
+                    
+                    window.currentCharts.monthlyTrendChart = new Chart(trendCtx, {
                         type: 'line',
                         data: {
                             labels: monthlyData.labels,
@@ -482,8 +487,6 @@ $current_user = $userModel->getUserById($user_id);
                 } catch (error) {
                     console.error('Error creating monthly trend chart:', error);
                 }
-            } else {
-                console.log('Monthly trend chart element not found');
             }
 
             // Category Chart with Real Data
@@ -492,10 +495,14 @@ $current_user = $userModel->getUserById($user_id);
                 console.log('Found category chart element');
                 
                 const breakdown = <?= json_encode($expense_breakdown) ?>;
-                console.log('Category breakdown:', breakdown);
                 
                 try {
-                    new Chart(categoryCtx, {
+                    // Destroy existing chart if it exists in currentCharts
+                    if (window.currentCharts.categoryChart) {
+                        window.currentCharts.categoryChart.destroy();
+                    }
+                    
+                    window.currentCharts.categoryChart = new Chart(categoryCtx, {
                         type: 'doughnut',
                         data: {
                             labels: breakdown.map(item => item.category),
@@ -531,35 +538,19 @@ $current_user = $userModel->getUserById($user_id);
                 } catch (error) {
                     console.error('Error creating category chart:', error);
                 }
-            } else {
-                console.log('Category chart element not found');
-            }
-        });
-
-        // Profile dropdown functionality
-        function toggleProfileDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('profileDropdown');
-            if (dropdown) {
-                dropdown.classList.toggle('show');
             }
         }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('profileDropdown');
-            if (dropdown && !dropdown.contains(e.target) && !e.target.closest('.user-profile')) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // Close dropdown when pressing escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const dropdown = document.getElementById('profileDropdown');
-                if (dropdown) {
-                    dropdown.classList.remove('show');
-                }
+        // Initialize charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard - Initializing charts...');
+            
+            // Check if chart elements exist before initializing
+            const monthlyTrendChart = document.getElementById('monthlyTrendChart');
+            const categoryChart = document.getElementById('categoryChart');
+            
+            if (monthlyTrendChart || categoryChart) {
+                initializeDashboardCharts();
             }
         });
     </script>
