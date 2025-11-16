@@ -1,6 +1,8 @@
 </div> <!-- Close container -->
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Load script only once -->
     <script src="assets/js/script.js"></script>
     
     <script>
@@ -52,7 +54,26 @@
                     }, 3000);
                 });
             });
+
+            // Initialize breadcrumb functionality if function exists
+            if (typeof initializeBreadcrumbs === 'function') {
+                initializeBreadcrumbs();
+            }
         });
+
+        // Global close all dropdowns function
+        function closeAllDropdowns() {
+            // Close profile dropdown
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) {
+                profileDropdown.classList.remove('show');
+            }
+            
+            // Close breadcrumb menu
+            if (typeof closeBreadcrumbMenu === 'function') {
+                closeBreadcrumbMenu();
+            }
+        }
 
         // Global profile dropdown functionality
         function toggleProfileDropdown(event) {
@@ -62,113 +83,42 @@
                 dropdown.classList.toggle('show');
             }
         }
-
-        // Close dropdown when clicking outside
+// 
+        // Close all dropdowns when clicking outside
         document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('profileDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
             const userProfile = document.querySelector('.user-profile');
+            const breadcrumb = document.querySelector('.breadcrumb');
+            const breadcrumbMenu = document.getElementById('breadcrumbNavMenu');
             
-            if (dropdown && userProfile && !userProfile.contains(e.target)) {
-                dropdown.classList.remove('show');
+            // Close profile dropdown if clicking outside
+            if (profileDropdown && profileDropdown.classList.contains('show') && 
+                userProfile && !userProfile.contains(e.target) && 
+                !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+            
+            // Close breadcrumb menu if clicking outside AND it's currently open
+            if (breadcrumbMenu && breadcrumbMenu.classList.contains('show') && 
+                breadcrumb && !breadcrumb.contains(e.target)) {
+                closeBreadcrumbMenu();
             }
         });
 
         // Close dropdown when pressing escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                const dropdown = document.getElementById('profileDropdown');
-                if (dropdown) {
-                    dropdown.classList.remove('show');
-                }
+                closeAllDropdowns();
             }
         });
-
-        // Mobile menu functionality
-        function initializeMobileMenu() {
-            const menuToggle = document.querySelector('.mobile-menu-toggle');
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function() {
-                    const sidebar = document.getElementById('sidebar');
-                    if (sidebar) {
-                        sidebar.classList.toggle('mobile-open');
-                    }
-                });
-            }
-        }
-
-        // Close mobile menu when clicking on a link
-        document.addEventListener('click', function(e) {
-            if (e.target.matches('.nav-link') || e.target.closest('.nav-link')) {
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar && sidebar.classList.contains('mobile-open')) {
-                    sidebar.classList.remove('mobile-open');
-                }
-            }
-        });
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeMobileMenu();
-            
-            // Add touch support for mobile devices
-            if ('ontouchstart' in window) {
-                document.body.classList.add('touch-device');
-            }
-        });
-
-        // Loading state helper
-        function showLoading(message = 'Loading...') {
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.style.opacity = '0.7';
-                mainContent.style.pointerEvents = 'none';
-            }
-            
-            // Remove existing loading spinner
-            const existingSpinner = document.querySelector('.loading-spinner');
-            if (existingSpinner) {
-                existingSpinner.remove();
-            }
-            
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading-spinner';
-            loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
-            loadingDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 1000;
-                background: white;
-                padding: 20px 30px;
-                border-radius: 12px;
-                box-shadow: var(--shadow-lg);
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-weight: 500;
-            `;
-            
-            document.body.appendChild(loadingDiv);
-        }
-
-        function hideLoading() {
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.style.opacity = '1';
-                mainContent.style.pointerEvents = 'auto';
-            }
-            
-            const loadingSpinner = document.querySelector('.loading-spinner');
-            if (loadingSpinner) {
-                loadingSpinner.remove();
-            }
-        }
 
         // Make functions globally available
         window.showLoading = showLoading;
         window.hideLoading = hideLoading;
         window.toggleProfileDropdown = toggleProfileDropdown;
+        window.toggleBreadcrumbMenu = toggleBreadcrumbMenu;
+        window.closeBreadcrumbMenu = closeBreadcrumbMenu;
+        window.closeAllDropdowns = closeAllDropdowns;
     </script>
 </body>
 </html>
