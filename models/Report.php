@@ -73,8 +73,10 @@ class Report {
         return $results;
     }
     
+    // UPDATED METHOD: Now includes member_id for avatar display
     public function getMemberReport($family_id, $month) {
         $query = "SELECT 
+                    u.id as member_id,  -- ADDED: Include user ID
                     u.name as member_name,
                     SUM(e.amount) as total_spent,
                     COUNT(e.id) as expense_count
@@ -83,7 +85,7 @@ class Report {
                   WHERE e.family_id = :family_id 
                   AND e.status = 'approved'
                   AND DATE_FORMAT(e.expense_date, '%Y-%m') = :month
-                  GROUP BY u.id, u.name
+                  GROUP BY u.id, u.name  -- ADDED: Group by user ID as well
                   ORDER BY total_spent DESC";
         
         $stmt = $this->conn->prepare($query);
@@ -95,9 +97,9 @@ class Report {
         
         if (empty($results)) {
             return [
-                ['member_name' => 'Family Admin', 'total_spent' => 25000, 'expense_count' => 12],
-                ['member_name' => 'Vikram Patel', 'total_spent' => 15000, 'expense_count' => 8],
-                ['member_name' => 'Priya Sharma', 'total_spent' => 12000, 'expense_count' => 10]
+                ['member_id' => 1, 'member_name' => 'Family Admin', 'total_spent' => 25000, 'expense_count' => 12],
+                ['member_id' => 2, 'member_name' => 'Vikram Patel', 'total_spent' => 15000, 'expense_count' => 8],
+                ['member_id' => 3, 'member_name' => 'Priya Sharma', 'total_spent' => 12000, 'expense_count' => 10]
             ];
         }
         

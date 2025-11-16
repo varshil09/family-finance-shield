@@ -283,5 +283,67 @@ class User {
             'created_at' => date('Y-m-d H:i:s')
         ];
     }
+
+    // NEW METHODS FOR AVATAR FIX IN REPORTS
+    public function getUserByEmail($email) {
+        try {
+            $query = "SELECT id, name, email, avatar FROM " . $this->table_name . " WHERE email = :email";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && !empty($user['avatar']) && !file_exists($user['avatar'])) {
+                $user['avatar'] = null;
+            }
+            
+            return $user;
+        } catch (PDOException $e) {
+            error_log("Get user by email error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getUserByName($name) {
+        try {
+            $query = "SELECT id, name, email, avatar FROM " . $this->table_name . " WHERE name = :name LIMIT 1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':name', $name);
+            $stmt->execute();
+            
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && !empty($user['avatar']) && !file_exists($user['avatar'])) {
+                $user['avatar'] = null;
+            }
+            
+            return $user;
+        } catch (PDOException $e) {
+            error_log("Get user by name error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // NEW METHOD: Get user by name or email for reports
+    public function getUserByNameOrEmail($identifier) {
+        try {
+            $query = "SELECT id, name, email, avatar FROM " . $this->table_name . " WHERE name = :identifier OR email = :identifier LIMIT 1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':identifier', $identifier);
+            $stmt->execute();
+            
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && !empty($user['avatar']) && !file_exists($user['avatar'])) {
+                $user['avatar'] = null;
+            }
+            
+            return $user;
+        } catch (PDOException $e) {
+            error_log("Get user by name or email error: " . $e->getMessage());
+            return null;
+        }
+    }
 }
 ?>
