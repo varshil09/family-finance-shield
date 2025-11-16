@@ -107,127 +107,127 @@ $current_user = $userModel->getUserById($_SESSION['user_id']);
                 </div>
             </div>
 
-            <!-- Report Period Selector -->
-            <div class="card">
-                <div class="card-header">
-                    <h3>Report Period</h3>
-                    <span class="status <?= $budget_utilization > 80 ? 'status-pending' : 'status-approved' ?>">
-                        <?= $budget_utilization ?>% Budget Used
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group floating-label">
-                                <input type="month" name="month" value="<?= $month ?>" class="form-control" 
-                                       onchange="window.location.href='reports.php?month=' + this.value + '&year=<?= $year ?>'">
-                                <label for="month">Select Month</label>
-                                <div class="form-icon">
-                                    <i class="fas fa-calendar"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group floating-label">
-                                <select name="year" class="form-control" onchange="window.location.href='reports.php?year=' + this.value + '&month=<?= $month ?>'">
-                                    <?php for ($y = 2022; $y <= date('Y'); $y++): ?>
-                                        <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
-                                    <?php endfor; ?>
-                                </select>
-                                <label for="year">Select Year</label>
-                                <div class="form-icon">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                            </div>
-                        </div>
+            <div class="reports-container">
+                <!-- Report Period Selector -->
+                <div class="card slide-up">
+                    <div class="card-header">
+                        <h3>Report Period</h3>
+                        <span class="status <?= $budget_utilization > 80 ? 'status-pending' : 'status-approved' ?>">
+                            <?= $budget_utilization ?>% Budget Used
+                        </span>
                     </div>
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="quick-stats">
-                                <div class="quick-stat">
-                                    <i class="fas fa-calendar" style="color: #4361ee;"></i>
-                                    <div>
-                                        <div class="quick-stat-value"><?= date('F Y', strtotime($month . '-01')) ?></div>
-                                        <div class="quick-stat-label">Reporting Period</div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group floating-label">
+                                    <input type="month" name="month" value="<?= $month ?>" class="form-control" 
+                                           onchange="window.location.href='reports.php?month=' + this.value + '&year=<?= $year ?>'">
+                                    <label for="month">Select Month</label>
+                                    <div class="form-icon">
+                                        <i class="fas fa-calendar"></i>
                                     </div>
                                 </div>
-                                <div class="quick-stat">
-                                    <i class="fas fa-receipt" style="color: #4cc9f0;"></i>
-                                    <div>
-                                        <div class="quick-stat-value"><?= $monthly_report['expense_count'] ?></div>
-                                        <div class="quick-stat-label">Total Transactions</div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group floating-label">
+                                    <select name="year" class="form-control" onchange="window.location.href='reports.php?year=' + this.value + '&month=<?= $month ?>'">
+                                        <?php for ($y = 2022; $y <= date('Y'); $y++): ?>
+                                            <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                    <label for="year">Select Year</label>
+                                    <div class="form-icon">
+                                        <i class="fas fa-calendar-alt"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="quick-stats">
+                                    <div class="quick-stat">
+                                        <i class="fas fa-calendar" style="color: #4361ee;"></i>
+                                        <div>
+                                            <div class="quick-stat-value"><?= date('F Y', strtotime($month . '-01')) ?></div>
+                                            <div class="quick-stat-label">Reporting Period</div>
+                                        </div>
+                                    </div>
+                                    <div class="quick-stat">
+                                        <i class="fas fa-receipt" style="color: #4cc9f0;"></i>
+                                        <div>
+                                            <div class="quick-stat-value"><?= $monthly_report['expense_count'] ?></div>
+                                            <div class="quick-stat-label">Total Transactions</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Quick Stats Overview -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon icon-expense">
-                        <i class="fas fa-money-bill-wave"></i>
+                <!-- Quick Stats Overview -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-expense">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-value">₹<?= number_format($monthly_report['total_expenses']) ?></div>
+                        <div class="stat-title">Total Expenses</div>
+                        <div class="stat-trend">
+                            <span class="trend-<?= $monthly_report['total_expenses'] > 60000 ? 'down' : 'up' ?>">
+                                <i class="fas fa-<?= $monthly_report['total_expenses'] > 60000 ? 'chart-line' : 'check-circle' ?>"></i>
+                                <?= $monthly_report['total_expenses'] > 60000 ? 'Above Average' : 'On Track' ?>
+                            </span>
+                        </div>
                     </div>
-                    <div class="stat-value">₹<?= number_format($monthly_report['total_expenses']) ?></div>
-                    <div class="stat-title">Total Expenses</div>
-                    <div class="stat-trend">
-                        <span class="trend-<?= $monthly_report['total_expenses'] > 60000 ? 'down' : 'up' ?>">
-                            <i class="fas fa-<?= $monthly_report['total_expenses'] > 60000 ? 'chart-line' : 'check-circle' ?>"></i>
-                            <?= $monthly_report['total_expenses'] > 60000 ? 'Above Average' : 'On Track' ?>
-                        </span>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon icon-income">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="stat-value">₹<?= number_format($monthly_report['average_expense']) ?></div>
+                        <div class="stat-title">Average per Expense</div>
+                        <div class="stat-trend">
+                            <span class="trend-up">
+                                <i class="fas fa-balance-scale"></i>
+                                Per Transaction
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon icon-savings">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                        <div class="stat-value">₹<?= number_format($savings_potential) ?></div>
+                        <div class="stat-title">Budget Remaining</div>
+                        <div class="stat-trend">
+                            <span class="trend-<?= $savings_potential < 15000 ? 'down' : 'up' ?>">
+                                <i class="fas fa-<?= $savings_potential < 15000 ? 'exclamation-triangle' : 'coins' ?>"></i>
+                                <?= $savings_potential < 15000 ? 'Low' : 'Good' ?>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon icon-budget">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stat-value"><?= count($category_report) ?></div>
+                        <div class="stat-title">Categories Used</div>
+                        <div class="stat-trend">
+                            <span class="trend-up">
+                                <i class="fas fa-tags"></i>
+                                Spending Diversity
+                            </span>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon icon-income">
-                        <i class="fas fa-calculator"></i>
-                    </div>
-                    <div class="stat-value">₹<?= number_format($monthly_report['average_expense']) ?></div>
-                    <div class="stat-title">Average per Expense</div>
-                    <div class="stat-trend">
-                        <span class="trend-up">
-                            <i class="fas fa-balance-scale"></i>
-                            Per Transaction
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon icon-savings">
-                        <i class="fas fa-piggy-bank"></i>
-                    </div>
-                    <div class="stat-value">₹<?= number_format($savings_potential) ?></div>
-                    <div class="stat-title">Budget Remaining</div>
-                    <div class="stat-trend">
-                        <span class="trend-<?= $savings_potential < 15000 ? 'down' : 'up' ?>">
-                            <i class="fas fa-<?= $savings_potential < 15000 ? 'exclamation-triangle' : 'coins' ?>"></i>
-                            <?= $savings_potential < 15000 ? 'Low' : 'Good' ?>
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon icon-budget">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <div class="stat-value"><?= count($category_report) ?></div>
-                    <div class="stat-title">Categories Used</div>
-                    <div class="stat-trend">
-                        <span class="trend-up">
-                            <i class="fas fa-tags"></i>
-                            Spending Diversity
-                        </span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Charts Section -->
-            <div class="form-row">
-                <!-- Monthly Trends Line Chart -->
-                <div class="form-col">
-                    <div class="card">
+                <!-- Charts Section -->
+                <div class="reports-grid">
+                    <!-- Monthly Trends Line Chart -->
+                    <div class="card reports-full-width">
                         <div class="card-header">
                             <h3><i class="fas fa-chart-line"></i> Monthly Expense Trends - <?= $year ?></h3>
                             <div class="chart-actions">
@@ -242,11 +242,9 @@ $current_user = $userModel->getUserById($_SESSION['user_id']);
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Category Distribution -->
-                <div class="form-col">
-                    <div class="card">
+                    <!-- Category Distribution -->
+                    <div class="card reports-full-width">
                         <div class="card-header">
                             <h3><i class="fas fa-chart-pie"></i> Spending Distribution - <?= date('M Y', strtotime($month . '-01')) ?></h3>
                         </div>
@@ -257,96 +255,94 @@ $current_user = $userModel->getUserById($_SESSION['user_id']);
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Export Actions -->
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-download"></i> Export Report - <?= date('F Y', strtotime($month . '-01')) ?></h3>
-                </div>
-                <div class="card-body">
-                    <div class="export-actions">
-                        <button class="btn btn-primary" onclick="generatePDFReport()">
-                            <i class="fas fa-file-pdf"></i> Save as PDF
-                        </button>
-                        <button class="btn btn-outline" onclick="printEnhancedReport()">
-                            <i class="fas fa-print"></i> Print Report
-                        </button>
-                        <a href="export-excel.php?month=<?= $month ?>&year=<?= $year ?>" class="btn btn-success">
-                            <i class="fas fa-file-excel"></i> Export Excel
-                        </a>
-                        <button class="btn btn-info" onclick="exportChartData()">
-                            <i class="fas fa-download"></i> Export Chart Data
-                        </button>
+                <!-- Export Actions -->
+                <div class="card reports-full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-download"></i> Export Report - <?= date('F Y', strtotime($month . '-01')) ?></h3>
                     </div>
-                </div>
-            </div>
-
-            <!-- Financial Insights -->
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-lightbulb"></i> Financial Insights & Recommendations</h3>
-                </div>
-                <div class="card-body">
-                    <div class="insights-grid">
-                        <div class="insight-item insight-warning">
-                            <div class="insight-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <div class="insight-content">
-                                <h4>Top Spending Category</h4>
-                                <p><?= $category_report[0]['category'] ?? 'N/A' ?> accounts for 
-                                ₹<?= number_format($category_report[0]['total_amount'] ?? 0) ?> 
-                                (<?= $total_amount > 0 ? round(($category_report[0]['total_amount'] / $total_amount) * 100) : 0 ?>% of total spending)</p>
-                            </div>
-                        </div>
-                        
-                        <div class="insight-item insight-info">
-                            <div class="insight-icon">
-                                <i class="fas fa-user-chart"></i>
-                            </div>
-                            <div class="insight-content">
-                                <h4>Highest Spender</h4>
-                                <p><?= $member_report[0]['member_name'] ?? 'N/A' ?> spent ₹<?= number_format($member_report[0]['total_spent'] ?? 0) ?> 
-                                across <?= $member_report[0]['expense_count'] ?? 0 ?> transactions</p>
-                            </div>
-                        </div>
-                        
-                        <div class="insight-item insight-success">
-                            <div class="insight-icon">
-                                <i class="fas fa-bullseye"></i>
-                            </div>
-                            <div class="insight-content">
-                                <h4>Budget Utilization</h4>
-                                <p>You've used <?= $budget_utilization ?>% of your monthly budget. 
-                                <?= $savings_potential > 0 ? '₹' . number_format($savings_potential) . ' remaining.' : 'Budget exceeded!' ?></p>
-                            </div>
-                        </div>
-                        
-                        <div class="insight-item insight-primary">
-                            <div class="insight-icon">
-                                <i class="fas fa-rocket"></i>
-                            </div>
-                            <div class="insight-content">
-                                <h4>Savings Opportunity</h4>
-                                <p>Reduce <?= $category_report[0]['category'] ?? 'general' ?> spending by 15% to save approximately 
-                                ₹<?= number_format(($category_report[0]['total_amount'] ?? 0) * 0.15) ?> next month</p>
-                            </div>
+                    <div class="card-body">
+                        <div class="export-actions">
+                            <button class="btn btn-primary" onclick="generatePDFReport()">
+                                <i class="fas fa-file-pdf"></i> Save as PDF
+                            </button>
+                            <button class="btn btn-outline" onclick="printEnhancedReport()">
+                                <i class="fas fa-print"></i> Print Report
+                            </button>
+                            <a href="export-excel.php?month=<?= $month ?>&year=<?= $year ?>" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </a>
+                            <button class="btn btn-info" onclick="exportChartData()">
+                                <i class="fas fa-download"></i> Export Chart Data
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Detailed Data Tables -->
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="card">
+                <!-- Financial Insights -->
+                <div class="card reports-full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-lightbulb"></i> Financial Insights & Recommendations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="insights-grid">
+                            <div class="insight-item insight-warning">
+                                <div class="insight-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Top Spending Category</h4>
+                                    <p><?= $category_report[0]['category'] ?? 'N/A' ?> accounts for 
+                                    ₹<?= number_format($category_report[0]['total_amount'] ?? 0) ?> 
+                                    (<?= $total_amount > 0 ? round(($category_report[0]['total_amount'] / $total_amount) * 100) : 0 ?>% of total spending)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-item insight-info">
+                                <div class="insight-icon">
+                                    <i class="fas fa-user-chart"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Highest Spender</h4>
+                                    <p><?= $member_report[0]['member_name'] ?? 'N/A' ?> spent ₹<?= number_format($member_report[0]['total_spent'] ?? 0) ?> 
+                                    across <?= $member_report[0]['expense_count'] ?? 0 ?> transactions</p>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-item insight-success">
+                                <div class="insight-icon">
+                                    <i class="fas fa-bullseye"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Budget Utilization</h4>
+                                    <p>You've used <?= $budget_utilization ?>% of your monthly budget. 
+                                    <?= $savings_potential > 0 ? '₹' . number_format($savings_potential) . ' remaining.' : 'Budget exceeded!' ?></p>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-item insight-primary">
+                                <div class="insight-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Savings Opportunity</h4>
+                                    <p>Reduce <?= $category_report[0]['category'] ?? 'general' ?> spending by 15% to save approximately 
+                                    ₹<?= number_format(($category_report[0]['total_amount'] ?? 0) * 0.15) ?> next month</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Data Tables -->
+                <div class="reports-grid">
+                    <div class="card reports-full-width">
                         <div class="card-header">
                             <h3><i class="fas fa-tags"></i> Expenses by Category</h3>
                             <span class="status status-approved"><?= count($category_report) ?> Categories</span>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
+                            <div class="reports-table-container">
                                 <table class="table">
                                     <thead>
                                         <tr>
@@ -399,16 +395,14 @@ $current_user = $userModel->getUserById($_SESSION['user_id']);
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="form-col">
-                    <div class="card">
+                    
+                    <div class="card reports-full-width">
                         <div class="card-header">
                             <h3><i class="fas fa-users"></i> Expenses by Family Member</h3>
                             <span class="status status-approved"><?= count($member_report) ?> Members</span>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
+                            <div class="reports-table-container">
                                 <table class="table">
                                     <thead>
                                         <tr>
@@ -419,19 +413,20 @@ $current_user = $userModel->getUserById($_SESSION['user_id']);
                                             <th>Share</th>
                                         </tr>
                                     </thead>
+                                    <!-- In the Expenses by Family Member table -->
                                     <tbody>
                                         <?php 
                                         $total_spent = array_sum(array_column($member_report, 'total_spent'));
                                         foreach ($member_report as $member): 
                                             $average = $member['expense_count'] > 0 ? round($member['total_spent'] / $member['expense_count']) : 0;
                                             $share = $total_spent > 0 ? round(($member['total_spent'] / $total_spent) * 100, 1) : 0;
+                                            
+                                            // FIX: Use member_id directly
+                                            $member_avatar = $userModel->getUserAvatar($member['member_id'] ?? 0);
                                         ?>
                                         <tr>
                                             <td>
                                                 <div class="member-info">
-                                                    <?php 
-                                                    $member_avatar = $userModel->getUserAvatar($member['member_id'] ?? 0);
-                                                    ?>
                                                     <div class="member-avatar-small" style="background-color: <?= getAvatarColor($member['member_name']) ?>">
                                                         <?php if (!empty($member_avatar) && file_exists($member_avatar)): ?>
                                                             <img src="<?= $member_avatar ?>" alt="<?= htmlspecialchars($member['member_name']) ?>">
