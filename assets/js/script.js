@@ -1,261 +1,219 @@
 // Family Finance Shield - Main JavaScript File
 // Initialize all dashboard functionality
 
-// Global variables
-let currentCharts = {};
+// Global variables - Check if already declared
+if (typeof window.currentCharts === 'undefined') {
+    window.currentCharts = {};
+}
 
-// Dashboard Charts Initialization
-function initializeDashboardCharts() {
-    console.log('Initializing dashboard charts...');
+// Utility Functions
+function getCurrentPage() {
+    const path = window.location.pathname;
+    const page = path.split('/').pop() || 'dashboard.php';
+    return page;
+}
+
+function getCurrentPageTitle() {
+    const currentPage = getCurrentPage();
+    const titles = {
+        'dashboard.php': 'Dashboard',
+        'expenses.php': 'Expenses',
+        'approvals.php': 'Approvals', 
+        'family.php': 'Family',
+        'reports.php': 'Reports',
+        'profile.php': 'Profile',
+        'settings.php': 'Settings'
+    };
+    return titles[currentPage] || 'Dashboard';
+}
+
+// SIMPLIFIED BREADCRUMB - SINGLE CLICKABLE ELEMENT
+function initializeBreadcrumbs() {
+    console.log('Initializing breadcrumb navigation...');
     
-    // Mini Monthly Trend Chart
-    const miniMonthlyCtx = document.getElementById('miniMonthlyChart');
-    if (miniMonthlyCtx) {
-        try {
-            currentCharts.miniMonthly = new Chart(miniMonthlyCtx, {
-                type: 'line',
-                data: {
-                    labels: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N'],
-                    datasets: [{
-                        data: [52000, 58000, 54000, 60000, 62000, 65000, 63000, 68000, 65000, 70000, 62000],
-                        borderColor: '#4361ee',
-                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return '₹' + context.raw.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: { 
-                            display: false,
-                            beginAtZero: true
-                        },
-                        x: { 
-                            display: false
-                        }
-                    },
-                    elements: {
-                        point: {
-                            radius: 0,
-                            hoverRadius: 4
-                        }
-                    }
-                }
-            });
-            console.log('Mini monthly chart created successfully');
-        } catch (error) {
-            console.error('Error creating mini monthly chart:', error);
-        }
+    const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
+    
+    if (breadcrumbCurrent) {
+        breadcrumbCurrent.addEventListener('click', function(e) {
+            e.stopPropagation(); // PREVENT EVENT BUBBLING
+            e.preventDefault(); // PREVENT DEFAULT BEHAVIOR
+            toggleBreadcrumbMenu();
+        });
     }
+    
+    // Add click handlers for navigation items
+    const navItems = document.querySelectorAll('.breadcrumb-nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation(); // PREVENT EVENT BUBBLING
+            console.log('Navigating to:', this.href);
+            if (typeof showLoading === 'function') {
+                showLoading('Loading...');
+            }
+        });
+    });
+}
 
-    // Mini Category Pie Chart
-    const miniCategoryCtx = document.getElementById('miniCategoryChart');
-    if (miniCategoryCtx) {
-        try {
-            currentCharts.miniCategory = new Chart(miniCategoryCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Food', 'Travel', 'Shop', 'Utils'],
-                    datasets: [{
-                        data: [12750, 18500, 7200, 6400],
-                        backgroundColor: ['#4361ee', '#3f37c9', '#4cc9f0', '#e63946'],
-                        borderWidth: 0,
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ₹${value.toLocaleString()} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
+function toggleBreadcrumbMenu() {
+    console.log('Toggle breadcrumb menu called');
+    const menu = document.getElementById('breadcrumbNavMenu');
+    const overlay = document.getElementById('breadcrumbOverlay');
+    const arrow = document.getElementById('breadcrumbArrow');
+    
+    if (menu && overlay) {
+        const isShowing = menu.classList.contains('show');
+        
+        if (isShowing) {
+            closeBreadcrumbMenu();
+        } else {
+            // Use setTimeout to prevent immediate closing by global handler
+            setTimeout(() => {
+                menu.classList.add('show');
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                if (arrow) {
+                    arrow.className = 'fas fa-chevron-up';
                 }
-            });
-            console.log('Mini category chart created successfully');
-        } catch (error) {
-            console.error('Error creating mini category chart:', error);
+                
+                console.log('Breadcrumb menu opened successfully');
+            }, 10);
         }
     }
 }
 
-// Main Dashboard Charts
-function initializeMainCharts() {
-    console.log('Initializing main charts...');
+function closeBreadcrumbMenu() {
+    console.log('Close breadcrumb menu called');
+    const menu = document.getElementById('breadcrumbNavMenu');
+    const overlay = document.getElementById('breadcrumbOverlay');
+    const arrow = document.getElementById('breadcrumbArrow');
     
-    // Spending Chart (Income vs Expenses)
-    const spendingCtx = document.getElementById('spendingChart');
-    if (spendingCtx) {
-        try {
-            currentCharts.spending = new Chart(spendingCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov'],
-                    datasets: [{
-                        label: 'Income',
-                        data: [65000,72000,68000,75000,78000,82000,80000,85000,83000,87000,85000],
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40,167,69,0.1)',
-                        tension: 0.3,
-                        fill: true,
-                        borderWidth: 3
-                    }, {
-                        label: 'Expenses',
-                        data: [52000,58000,54000,60000,62000,65000,63000,68000,65000,70000,62000],
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220,53,69,0.1)',
-                        tension: 0.3,
-                        fill: true,
-                        borderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ₹' + context.raw.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '₹' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            console.log('Spending chart created successfully');
-        } catch (error) {
-            console.error('Error creating spending chart:', error);
+    if (menu && overlay) {
+        menu.classList.remove('show');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+        
+        // Update UI
+        if (arrow) {
+            arrow.className = 'fas fa-chevron-down';
         }
+        
+        console.log('Breadcrumb menu closed successfully');
     }
+}
 
-    // Budget Chart
-    const budgetCtx = document.getElementById('budgetChart');
-    if (budgetCtx) {
-        try {
-            currentCharts.budget = new Chart(budgetCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Used', 'Remaining'],
-                    datasets: [{
-                        data: [62840, 12160],
-                        backgroundColor: ['#dc3545','#28a745'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ₹${value.toLocaleString()} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    },
-                    cutout: '60%'
-                }
-            });
-            console.log('Budget chart created successfully');
-        } catch (error) {
-            console.error('Error creating budget chart:', error);
-        }
+// Close menu when clicking outside
+// In script.js - modify the click handler:
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('breadcrumbNavMenu');
+    const breadcrumb = document.querySelector('.breadcrumb');
+    
+    // Check if click is outside both breadcrumb and menu
+    if (menu && menu.classList.contains('show') && 
+        !breadcrumb.contains(e.target) && 
+        !menu.contains(e.target)) {
+        closeBreadcrumbMenu();
     }
+});
 
-    // Category Chart
-    const categoryCtx = document.getElementById('categoryChart');
-    if (categoryCtx) {
-        try {
-            currentCharts.category = new Chart(categoryCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Food','Travel','Shopping','Utilities','Entertainment','Healthcare'],
-                    datasets: [{
-                        label: 'Amount (₹)',
-                        data: [12750,18500,7200,6400,3100,4200],
-                        backgroundColor: ['#4361ee','#3f37c9','#4cc9f0','#e63946','#ff9e00','#7209b7'],
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return '₹' + context.raw.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '₹' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            console.log('Category chart created successfully');
-        } catch (error) {
-            console.error('Error creating category chart:', error);
-        }
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeBreadcrumbMenu();
     }
+});
+
+// Loading state helper - MUST BE DEFINED
+function showLoading(message = 'Loading...') {
+    console.log('Show loading:', message);
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.style.opacity = '0.7';
+        mainContent.style.pointerEvents = 'none';
+    }
+    
+    // Remove existing loading spinner
+    const existingSpinner = document.querySelector('.loading-spinner');
+    if (existingSpinner) {
+        existingSpinner.remove();
+    }
+    
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'loading-spinner';
+    loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        background: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+    `;
+    
+    document.body.appendChild(loadingDiv);
+}
+
+function hideLoading() {
+    console.log('Hide loading');
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.style.opacity = '1';
+        mainContent.style.pointerEvents = 'auto';
+    }
+    
+    const loadingSpinner = document.querySelector('.loading-spinner');
+    if (loadingSpinner) {
+        loadingSpinner.remove();
+    }
+}
+
+// Global close all dropdowns function
+function closeAllDropdowns() {
+    // Close profile dropdown
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileDropdown) {
+        profileDropdown.classList.remove('show');
+    }
+    
+    // Close breadcrumb menu
+    closeBreadcrumbMenu();
+}
+
+// Initialize everything when DOM is loaded
+function initializeApp() {
+    console.log('Family Finance Shield - Initializing...');
+    
+    // Initialize all components
+    initializeBreadcrumbs();
+    initializeFormValidation();
+    initializeSidebar();
+    initializeMobileMenu();
+    initializeLoadingStates();
+    
+    // Add enhanced toast handling
+    const toasts = document.querySelectorAll('.alert-toast');
+    toasts.forEach(toast => {
+        toast.addEventListener('click', function(e) {
+            if (e.target.classList.contains('toast-close') || 
+                e.target.closest('.toast-close')) {
+                this.remove();
+            }
+        });
+    });
+    
+    console.log('Family Finance Shield - Initialization complete!');
+}
+
+// Only initialize if not already initialized
+if (!window.appInitialized) {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+    window.appInitialized = true;
 }
 
 // Form Validation and Enhancement
@@ -321,18 +279,13 @@ function initializeSidebar() {
     console.log('Initializing sidebar...');
     
     const navLinks = document.querySelectorAll('.nav-link');
-    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.php';
+    const currentPage = getCurrentPage();
     
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href === currentPage || (currentPage === '' && href === 'dashboard.php')) {
             link.classList.add('active');
         }
-        
-        // Add click tracking for analytics
-        link.addEventListener('click', function() {
-            console.log('Navigation:', this.getAttribute('href'));
-        });
     });
 }
 
@@ -346,10 +299,6 @@ function initializeMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             if (sidebar) {
                 sidebar.classList.toggle('mobile-open');
-                // Update aria-expanded for accessibility
-                this.setAttribute('aria-expanded', 
-                    sidebar.classList.contains('mobile-open').toString()
-                );
             }
         });
     }
@@ -412,147 +361,17 @@ function formatNumber(number) {
     return parseFloat(number).toLocaleString('en-IN');
 }
 
-// Initialize everything when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Family Finance Shield - Initializing...');
-    
-    // Initialize all components
-    initializeDashboardCharts();
-    initializeMainCharts();
-    initializeFormValidation();
-    initializeSidebar();
-    initializeMobileMenu();
-    initializeLoadingStates();
-    
-    // Add enhanced toast handling
-    const toasts = document.querySelectorAll('.alert-toast');
-    toasts.forEach(toast => {
-        toast.addEventListener('click', function(e) {
-            if (e.target.classList.contains('toast-close') || 
-                e.target.closest('.toast-close')) {
-                this.remove();
-            }
-        });
-    });
-    
-    // Add CSS for enhanced animations
-    const style = document.createElement('style');
-    style.textContent = `
-        .loading-spinner {
-            animation: fadeIn 0.3s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -40%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-        
-        .mobile-menu-toggle {
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar {
-            transition: transform 0.3s ease;
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                height: 100vh;
-                z-index: 999;
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0 !important;
-            }
-        }
-        
-        .alert-toast {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .alert-toast:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 400px;
-        }
-        
-        canvas {
-            max-width: 100%;
-            height: auto !important;
-        }
-
-        .expense-form.collapsed {
-            display: none;
-        }
-
-        /* Enhanced toast animations */
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-        }
-
-        /* Touch device improvements */
-        .touch-device .btn {
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        .touch-device .nav-link {
-            padding: 20px 15px;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    console.log('Family Finance Shield - Initialization complete!');
-});
-
 // Export functions for global access
 window.downloadPDFReport = downloadPDFReport;
 window.printReport = printReport;
 window.formatCurrency = formatCurrency;
 window.formatDate = formatDate;
 window.formatNumber = formatNumber;
-window.toggleProfileDropdown = toggleProfileDropdown;
+window.toggleBreadcrumbMenu = toggleBreadcrumbMenu;
+window.closeBreadcrumbMenu = closeBreadcrumbMenu;
 window.showLoading = showLoading;
 window.hideLoading = hideLoading;
-
-// Error handling for charts
-window.addEventListener('error', function(e) {
-    console.error('JavaScript Error:', e.error);
-});
-
-// Clean up charts on page unload to prevent memory leaks
-window.addEventListener('beforeunload', function() {
-    Object.values(currentCharts).forEach(chart => {
-        if (chart && typeof chart.destroy === 'function') {
-            chart.destroy();
-        }
-    });
-});
+window.closeAllDropdowns = closeAllDropdowns;
 
 // Placeholder functions for export features
 function downloadPDFReport() {
@@ -571,28 +390,19 @@ function printReport() {
     }, 1000);
 }
 
-// Enhanced mobile menu close on navigation
-document.addEventListener('click', function(e) {
-    if (e.target.matches('.nav-link') || e.target.closest('.nav-link')) {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar && sidebar.classList.contains('mobile-open')) {
-            sidebar.classList.remove('mobile-open');
-        }
-    }
+// Error handling
+window.addEventListener('error', function(e) {
+    console.error('JavaScript Error:', e.error);
 });
 
-// Keyboard navigation support
-document.addEventListener('keydown', function(e) {
-    // Close dropdowns with Escape key
-    if (e.key === 'Escape') {
-        const dropdowns = document.querySelectorAll('.user-profile-dropdown.show');
-        dropdowns.forEach(dropdown => {
-            dropdown.classList.remove('show');
+// Clean up on page unload
+window.addEventListener('beforeunload', function() {
+    // Clean up charts if they exist
+    if (window.currentCharts) {
+        Object.values(window.currentCharts).forEach(chart => {
+            if (chart && typeof chart.destroy === 'function') {
+                chart.destroy();
+            }
         });
-        
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar && sidebar.classList.contains('mobile-open')) {
-            sidebar.classList.remove('mobile-open');
-        }
     }
 });
