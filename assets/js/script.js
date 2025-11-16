@@ -266,7 +266,7 @@ function initializeFormValidation() {
     const confirmPassword = document.getElementById('confirm_password');
     if (confirmPassword) {
         confirmPassword.addEventListener('input', function() {
-            const password = document.getElementById('password');
+            const password = document.getElementById('new_password') || document.getElementById('password');
             const confirm = this;
             
             if (password && password.value !== confirm.value) {
@@ -296,17 +296,23 @@ function initializeFormValidation() {
         input.max = new Date().toISOString().split('T')[0];
     });
 
-    // Auto-hide alerts after 5 seconds
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            alert.style.opacity = '0';
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.style.display = 'none';
-                }
-            }, 300);
-        }, 5000);
+    // Enhanced form submission handling
+    const forms = document.querySelectorAll('form:not(.no-validate)');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn && submitBtn.classList.contains('btn-animated')) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                submitBtn.disabled = true;
+                
+                // Revert after 5 seconds (in case of error)
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 5000);
+            }
+        });
     });
 }
 
@@ -322,6 +328,11 @@ function initializeSidebar() {
         if (href === currentPage || (currentPage === '' && href === 'dashboard.php')) {
             link.classList.add('active');
         }
+        
+        // Add click tracking for analytics
+        link.addEventListener('click', function() {
+            console.log('Navigation:', this.getAttribute('href'));
+        });
     });
 }
 
@@ -329,26 +340,26 @@ function initializeSidebar() {
 function initializeMobileMenu() {
     console.log('Initializing mobile menu...');
     
-    const menuToggle = document.createElement('button');
-    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    menuToggle.className = 'mobile-menu-toggle';
-    menuToggle.setAttribute('aria-label', 'Toggle menu');
-    
-    document.body.appendChild(menuToggle);
-    
-    menuToggle.addEventListener('click', function() {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('mobile-open');
-        }
-    });
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('mobile-open');
+                // Update aria-expanded for accessibility
+                this.setAttribute('aria-expanded', 
+                    sidebar.classList.contains('mobile-open').toString()
+                );
+            }
+        });
+    }
     
     // Check screen size and show/hide toggle
     function checkScreenSize() {
         if (window.innerWidth <= 768) {
-            menuToggle.style.display = 'flex';
+            if (menuToggle) menuToggle.style.display = 'flex';
         } else {
-            menuToggle.style.display = 'none';
+            if (menuToggle) menuToggle.style.display = 'none';
             const sidebar = document.getElementById('sidebar');
             if (sidebar) {
                 sidebar.classList.remove('mobile-open');
@@ -364,82 +375,19 @@ function initializeMobileMenu() {
 function initializeLoadingStates() {
     console.log('Initializing loading states...');
     
-    // Form submission loading
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                submitBtn.disabled = true;
-                
-                // Revert after 3 seconds (in case of error)
+    // Enhanced button loading states
+    const buttons = document.querySelectorAll('.btn-animated');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (this.type === 'submit' || this.getAttribute('type') === 'submit') {
+                this.classList.add('loading');
                 setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
+                    this.classList.remove('loading');
                 }, 3000);
             }
         });
     });
 }
-
-function showLoading() {
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.style.opacity = '0.7';
-        mainContent.style.pointerEvents = 'none';
-    }
-    
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'loading-spinner';
-    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-    loadingDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        background: white;
-        padding: 20px 30px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 500;
-    `;
-    
-    document.body.appendChild(loadingDiv);
-}
-
-// Profile dropdown functionality
-function toggleProfileDropdown() {
-    const dropdown = document.getElementById('profileDropdown');
-    if (dropdown) {
-        dropdown.classList.toggle('show');
-    }
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-    const dropdown = document.getElementById('profileDropdown');
-    const userProfile = document.querySelector('.user-profile');
-    
-    if (dropdown && userProfile && !userProfile.contains(e.target)) {
-        dropdown.classList.remove('show');
-    }
-});
-
-// Close dropdown when pressing escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const dropdown = document.getElementById('profileDropdown');
-        if (dropdown) {
-            dropdown.classList.remove('show');
-        }
-    }
-});
 
 // Currency Formatting Helper
 function formatCurrency(amount) {
@@ -459,6 +407,11 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-IN', options);
 }
 
+// Number formatting helper
+function formatNumber(number) {
+    return parseFloat(number).toLocaleString('en-IN');
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Family Finance Shield - Initializing...');
@@ -471,7 +424,18 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeMobileMenu();
     initializeLoadingStates();
     
-    // Add CSS for loading states
+    // Add enhanced toast handling
+    const toasts = document.querySelectorAll('.alert-toast');
+    toasts.forEach(toast => {
+        toast.addEventListener('click', function(e) {
+            if (e.target.classList.contains('toast-close') || 
+                e.target.closest('.toast-close')) {
+                this.remove();
+            }
+        });
+    });
+    
+    // Add CSS for enhanced animations
     const style = document.createElement('style');
     style.textContent = `
         .loading-spinner {
@@ -508,8 +472,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        .alert {
-            transition: opacity 0.3s ease;
+        .alert-toast {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .alert-toast:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
         .chart-container {
@@ -525,6 +495,35 @@ document.addEventListener('DOMContentLoaded', function() {
         .expense-form.collapsed {
             display: none;
         }
+
+        /* Enhanced toast animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Touch device improvements */
+        .touch-device .btn {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .touch-device .nav-link {
+            padding: 20px 15px;
+        }
     `;
     document.head.appendChild(style);
     
@@ -536,7 +535,10 @@ window.downloadPDFReport = downloadPDFReport;
 window.printReport = printReport;
 window.formatCurrency = formatCurrency;
 window.formatDate = formatDate;
+window.formatNumber = formatNumber;
 window.toggleProfileDropdown = toggleProfileDropdown;
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
 
 // Error handling for charts
 window.addEventListener('error', function(e) {
@@ -554,23 +556,43 @@ window.addEventListener('beforeunload', function() {
 
 // Placeholder functions for export features
 function downloadPDFReport() {
-    showLoading();
+    showLoading('Generating PDF report...');
     setTimeout(() => {
-        const loadingSpinner = document.querySelector('.loading-spinner');
-        if (loadingSpinner) {
-            loadingSpinner.remove();
-        }
+        hideLoading();
         alert('PDF export feature would be implemented here');
     }, 1500);
 }
 
 function printReport() {
-    showLoading();
+    showLoading('Preparing print...');
     setTimeout(() => {
-        const loadingSpinner = document.querySelector('.loading-spinner');
-        if (loadingSpinner) {
-            loadingSpinner.remove();
-        }
+        hideLoading();
         window.print();
     }, 1000);
 }
+
+// Enhanced mobile menu close on navigation
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.nav-link') || e.target.closest('.nav-link')) {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('mobile-open')) {
+            sidebar.classList.remove('mobile-open');
+        }
+    }
+});
+
+// Keyboard navigation support
+document.addEventListener('keydown', function(e) {
+    // Close dropdowns with Escape key
+    if (e.key === 'Escape') {
+        const dropdowns = document.querySelectorAll('.user-profile-dropdown.show');
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('show');
+        });
+        
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('mobile-open')) {
+            sidebar.classList.remove('mobile-open');
+        }
+    }
+});
